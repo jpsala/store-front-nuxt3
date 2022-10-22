@@ -8,7 +8,7 @@
   const imageToShow = ref('default_image')
   const quantity = ref(1)
   const cartStore = useCartStore()
-  const {cart, cartItemsCount, cartForDebug} = storeToRefs(cartStore)
+  const {cart, cartForDebug} = storeToRefs(cartStore)
   const {addVariant: addVariantToCart} = cartStore
   
   const productStore = useProductStore()
