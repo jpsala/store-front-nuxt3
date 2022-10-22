@@ -1,38 +1,33 @@
 import { defineStore } from 'pinia'
 const API_BASE_URL = 'http://localhost:9000/'
 let cartId = process.client && localStorage.getItem('cart_id');
-console.log('cartId', cartId);
 
 export const useCartStore = defineStore('cart-store', () => {
-  const _cart = ref({items:[]})
+  const cart = ref({items:[]})
  
   const getCart = async () => {
-
     if (cartId) {
-      const { data: resp } = useFetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
-      watch(resp, async ()=>{
-        if(resp.value?.cart){
-          setCart(resp.value.cart)
-        } else {
-          localStorage.removeItem('cart_id')
-          await createCart()
-        }
-      })
+      const resp = await $fetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
+      console.log('resp', resp.cart);
+      if(resp.cart){
+        setCart(resp.cart)
+      } else {
+        localStorage.removeItem('cart_id')
+        await createCart()
+      }
     } else await createCart()
   }
 
-  const cartItemsCount = ref(0)
-  watch(_cart, (aa)=>{
-    console.log('AAA', aa.value?.items.lenght);
-  }, {deep: true})
-  
+  const cartItemsCount = computed(()=>{
+    return cart.value.items.reduce((accumulator, item)=>{
+      return accumulator + item.quantity
+    }, 0)
+  })
+
   const addGuestClientToCart = async (email) => {
     const resp = await $fetch(`/store/carts/${cartId}`, {
       baseURL: API_BASE_URL,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         email
       })
@@ -49,7 +44,6 @@ export const useCartStore = defineStore('cart-store', () => {
         // "email": "lebron@james.com"
       })
     })
-    console.log('resp', resp);
     cartId = resp.cart.id
     localStorage.setItem('cart_id', resp.cart.id);
     setCart(resp.cart)
@@ -57,30 +51,47 @@ export const useCartStore = defineStore('cart-store', () => {
   }
 
   const setCart = (c) => {
-    _cart.value = c
+    cart.value = c
   }
 
-  const addVariant = async (variantId) => {
+  const addVariant = async (variantId, quantity) => {
     const resp = await $fetch(`/store/carts/${cartId}/line-items`, {
       baseURL: API_BASE_URL,
+      key: (Date.now()).toString(),
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         variant_id: variantId,
-        quantity: 1
+        quantity
       })
     })
     setCart(resp.cart)
   }
 
-  const cart = computed( () => {
-    return _cart
+  const cartForDebug = computed(() => {
+    return {
+      quantity: cartItemsCount.value,
+      payment_provider: cart.value.payment_provider,
+      email: cart.value.email,
+      customer_id: cart.value.customer_id,
+      subtotal: cart.value.subtotal,
+      shipping_total: cart.value.shipping_total,
+      discount_total: cart.value.discount_total,
+      total: cart.value.total,
+
+      items: cart.value?.items.map(i => 
+        {
+          return {
+            title: i.title,
+            description: i.description,
+            quantity: i.quantity,
+            variant_id: i.variant_id,
+          }
+      })
+    }
   })
 
   if(process.client) getCart()
 
-  return { cart, setCart, addVariant, cartItemsCount }
+  return { cart, setCart, addVariant, cartItemsCount, cartForDebug }
 })
 
