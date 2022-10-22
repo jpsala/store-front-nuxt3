@@ -1,53 +1,29 @@
 <script setup >
-import { useCartStore } from '~/store/cart'
-  const {API_BASE_URL} = useRuntimeConfig()
+  import { useCartStore } from '~/store/cart'
+  import { useProductStore } from '~/store/product'
+  import { storeToRefs } from 'pinia'
+
   const route = useRoute()
   const showDetails = ref(false)
   const imageToShow = ref('default_image')
-  const product = ref(undefined)
-  const {cart, cartItemsCount, addVariant} = useCartStore()
-
-  product.value = (await $fetch(`store/products/${route.params.id}`, { baseURL: API_BASE_URL, key: route.params.id })).product
-  console.log('Product', product.value);
-  if(product.value.images.length) imageToShow.value = product.value.images[0].id
-
-  const variantId = product.value.variants.find( p =>
-      p.options.find(o => o.value === 'S') && p.options.find(o => o.value === 'White')
-  )
-
-  const variantIsSelected = (option, value) => {
-    return selectedOptions.value.find( o => o.option === option.title && o.value === value.value)
-  }
-
-  const options = computed(() => {
-    if (product.value.options) {
-      return product.value.options.map((option) => {
-        option.selected = false
-        option.values = option.values.reduce((acc, curr) => {
-          if (!acc.find(val => val.value === curr.value)) {
-            return [...acc, { ...curr }]
-          }
-          return acc
-        }, [])
-        
-        return option
-      })
-    }
-  })
-
-  const selectedOptions = computed( () => {
-    return product.value.options
-      .filter(o => o.selected)
-      .map(o => {return {option: o.title, value: o.selected.value}})
-  })
-
-  const selectVariant = (option, variant) => {
-    option.selected = option.selected === variant ? undefined : variant
-  }
-
-  const validated = computed(()=>selectedOptions.value.length === product.value.options.length)
+  const quantity = ref(1)
+  const cartStore = useCartStore()
+  const {cart, cartItemsCount, cartForDebug} = storeToRefs(cartStore)
+  const {addVariant: addVariantToCart} = cartStore
   
-  const addToBag = () => addVariant(product.value.variants[0].id)
+  const productStore = useProductStore()
+  const {product, options, selectedVariant, validated} = storeToRefs(productStore)
+  const {changeProduct , optionIsSelected, selectVariant} = productStore
+  
+  await changeProduct(route.params.id)
+  
+  if(product.value?.images.length) imageToShow.value = product.value.images[0].id
+ 
+  const addToBag = () => {
+      if(validated){
+        addVariantToCart(selectedVariant.value.id,quantity.value)
+    }
+  }
 
 </script>
 
@@ -80,7 +56,7 @@ import { useCartStore } from '~/store/cart'
                   <img
                     alt=""
                     :src="image.url"
-                    class=" w-full"
+                    class="w-full"
                   >
                 </div>
               </div>
@@ -111,7 +87,7 @@ import { useCartStore } from '~/store/cart'
               <button
                 v-for="value in option.values"
                 :key="value.id"
-                :class="{'bg-red-500': variantIsSelected(option, value)}"
+                :class="{'bg-red-500': optionIsSelected(option, value)}"
                 @click="selectVariant(option, value)"
                 class="btn"
               >
@@ -125,9 +101,9 @@ import { useCartStore } from '~/store/cart'
             Add to bag
           </button>
           <div class="flex items-center rounded-md px-4 py-2 shadow">
-            <button>–</button>
-            <span class="w-8 text-center">1</span>
-            <button>+</button>
+            <button @click="quantity--">–</button>
+            <input v-model="quantity"  class="w-8 text-center"/>
+            <button @click="quantity++">+</button>
           </div>
         </div>
         <div class="mt-12">
@@ -157,10 +133,8 @@ import { useCartStore } from '~/store/cart'
         </div>
       </div>
     </div>
-    <h1>{{cart?.id}} - items: {{cartItemsCount}}</h1>
-    <pre class="mt-3">{{cart?.items}}</pre>
     <hr>
-    <pre :if="cart">Cart: {{cart}}</pre>
+    <pre :if="cart">Cart debug: {{cartForDebug}}</pre>
   </div>
   <div v-else>
     Loading...
