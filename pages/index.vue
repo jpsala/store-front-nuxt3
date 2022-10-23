@@ -1,3 +1,12 @@
+<script setup>
+  import { storeToRefs } from "pinia";
+import { useProductStore } from "~/store/product";
+
+  const {products} = storeToRefs(useProductStore())
+  const {API_BASE_URL} = useRuntimeConfig() 
+  
+</script>
+
 <template>
   <div>
     <div class="bg-ui-light pb-12 lg:pb-0 w-full px-4 sm:px-6 lg:px-12">
@@ -56,14 +65,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-const products = []
-const {API_BASE_URL} = useRuntimeConfig() 
-const  { data, pending, refresh, error } = (await useFetch('/store/products', { baseURL: API_BASE_URL }))
-if(error.value) console.log(error.value)
-else products.push(...data.value.products)
-</script>
 
 <style>
   .btn-ui {

@@ -1,24 +1,41 @@
 <script setup >
   import { useCartStore } from '~/store/cart'
   import { useProductStore } from '~/store/product'
+  import { useRegionStore } from '~/store/region'
   import { storeToRefs } from 'pinia'
+  import { formatPrice } from '~/helpers/formatPrice'
 
   const route = useRoute()
   const showDetails = ref(false)
   const imageToShow = ref('default_image')
   const quantity = ref(1)
+
   const cartStore = useCartStore()
   const {cart, cartForDebug} = storeToRefs(cartStore)
   const {addVariant: addVariantToCart} = cartStore
-  
+
   const productStore = useProductStore()
-  const {product, options, selectedVariant, validated} = storeToRefs(productStore)
-  const {changeProduct , optionIsSelected, selectVariant} = productStore
+  const {product, options, selectedVariant, validated, lowestPrice} = storeToRefs(productStore)
+  const {changeProductByID , optionIsSelected} = productStore
   
-  await changeProduct(route.params.id)
+  const {currencyCode} = storeToRefs(useRegionStore())
+
+  const changeOption = (option, variant) => {
+    option.selected = option.selected === variant ? undefined : variant
+  }
+
+  const increment = () => {
+    quantity.value ++
+  }
+
+  const decrement = () => {
+    if (quantity.value > 1) quantity.value --
+  }
+
+  await changeProductByID(route.params.id)
   
   if(product.value?.images.length) imageToShow.value = product.value.images[0].id
- 
+
   const addToBag = () => {
       if(validated){
         addVariantToCart(selectedVariant.value.id,quantity.value)
@@ -29,6 +46,7 @@
 
 <template>
   <div v-if="product" class="container mx-auto p-8">
+    {{currencyCode}}
     <div class="flex flex-col lg:flex-row">
       <div class="lg:w-3/5 lg:pr-14">
         <div class="flex">
@@ -70,7 +88,7 @@
           {{ product.title }}
         </h1>
         <p v-if="product.variants" class="text-lg mt-2 mb-4">
-          {{ product.variants[0].prices[0].amount/100 }} {{ product.variants[0].prices[0].currency_code }}
+          {{ formatPrice(product.variants[0].prices[0].amount, currencyCode) }} (?{{ product.variants[0].prices[0].currency_code }})
         </p>
         <p v-else>
           10 USD
@@ -88,7 +106,7 @@
                 v-for="value in option.values"
                 :key="value.id"
                 :class="{'bg-red-500': optionIsSelected(option, value)}"
-                @click="selectVariant(option, value)"
+                @click="changeOption(option, value)"
                 class="btn"
               >
                 {{ value.value }}
@@ -100,11 +118,7 @@
           <button :disabled="!validated" @click="addToBag()" class="btn-ui mr-2 px-12">
             Add to bag
           </button>
-          <div class="flex items-center rounded-md px-4 py-2 shadow">
-            <button @click="quantity--">–</button>
-            <input v-model="quantity"  class="w-8 text-center"/>
-            <button @click="quantity++">+</button>
-          </div>
+          <quantity-selector :quantity="quantity" @increment="increment" @decrement="decrement" />
         </div>
         <div class="mt-12">
           <div class="border-t last:border-b border-ui-medium py-6">

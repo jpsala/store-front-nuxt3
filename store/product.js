@@ -1,13 +1,45 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
+import { useRegionStore } from '~/store/region'
+
 const API_BASE_URL = 'http://localhost:9000/'
 
 
 export const useProductStore = defineStore('product-store', () => {
+  const { currencyCode } = storeToRefs(useRegionStore())
   const product = ref()
+  const products = ref([])
+  let dontFetchProducts = false
+  const pagination = reactive({
+    count: 0,
+    offset: 0,
+    limit: 20,
+    pages: 0
+  })
 
-  const changeProduct = async (id) => {
+  const changeProductByID = async (id) => {
     const {data} = await useFetch(`store/products/${id}`, { baseURL: API_BASE_URL, key: id })
+    // console.log('data.value', JSON.stringify(data.value, null, 2));
     product.value = data.value.product
+  }
+
+  const fetchProducts = async () => {
+    if(dontFetchProducts) return 
+    dontFetchProducts = true
+    const  data = await $fetch(`/store/products?limit=${pagination.limit}`, { baseURL: API_BASE_URL })
+    console.log('data', data);
+    pagination.count = data.count
+    pagination.offset = data.offset
+    pagination.limit = data.limit
+    products.value.push(...data.products)
+    dontFetchProducts = false
+  }
+
+  const lowestPrice = () => {
+    return product.value.variants
+      .reduce((prices, cur) => {
+        return [...prices, ...cur.prices.filter(price => price.currency_code === currencyCode.value)]
+      }, [])
+      .sort((a, b) => a.amount - b.amount)[0]
   }
 
   const options = computed(() => {
@@ -25,10 +57,6 @@ export const useProductStore = defineStore('product-store', () => {
       })
     }
   })
-
-  const selectVariant = (option, variant) => {
-    option.selected = option.selected === variant ? undefined : variant
-  }
 
   const allOptionsSelected = computed(()=>selectedOptions.value.length === product.value.options.length)
 
@@ -54,6 +82,17 @@ export const useProductStore = defineStore('product-store', () => {
       .map(o => {return {option: o.title, value: o.selected.value}})
   })
 
-  return { product, changeProduct, options, optionIsSelected, selectedOptions, selectedVariant, allOptionsSelected, selectVariant, validated }
+  watch(pagination, ()=>{
+    if(dontFetchProducts) return
+    console.log('pagination', pagination);
+    fetchProducts()
+  },{
+    immediate: true
+  })
+
+  return { 
+    products, product, changeProductByID, options, optionIsSelected, selectedOptions, selectedVariant, 
+    allOptionsSelected, validated, lowestPrice, pagination
+  }
 })
 

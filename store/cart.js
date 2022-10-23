@@ -1,14 +1,14 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
+
 const API_BASE_URL = 'http://localhost:9000/'
 let cartId = process.client && localStorage.getItem('cart_id');
 
 export const useCartStore = defineStore('cart-store', () => {
   const cart = ref({items:[]})
- 
+
   const getCart = async () => {
     if (cartId) {
       const resp = await $fetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
-      console.log('resp', resp.cart);
       if(resp.cart){
         setCart(resp.cart)
       } else {
