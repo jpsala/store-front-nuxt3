@@ -26,7 +26,8 @@ const {cartItemsCount} = storeToRefs(cartStore)
                 class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
               >
                 Products
-              </nuxt-link>  <nuxt-link
+              </nuxt-link>
+              <nuxt-link
                 to="/cart"
                 class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
               >
@@ -52,6 +53,10 @@ const {cartItemsCount} = storeToRefs(cartStore)
             </div>
           </div><div class="relative inline-block text-left">
             <div>
+              <nuxt-link
+                to="/cart"
+                class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
+              >
               <button
                 class="inline-flex items-center justify-center w-full py-2 bg-white text-sm font-medium hover:opacity-1/2"
                 type="button"
@@ -65,6 +70,8 @@ const {cartItemsCount} = storeToRefs(cartStore)
                   /></svg>
                 <span>{{cartItemsCount}}</span>
               </button>
+              </nuxt-link>
+              
             </div>
           </div>
         </div>
