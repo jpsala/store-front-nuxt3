@@ -1,9 +1,7 @@
 <script setup >
-  import { useCartStore } from '~/store/cart'
-  import { useProductStore } from '~/store/product'
-  import { useRegionStore } from '~/store/region'
+  import { useCartStore } from '~~/store/cart'
+  import { useProductStore } from '~~/store/product'
   import { storeToRefs } from 'pinia'
-  import { formatPrice } from '~/helpers/formatPrice'
 
   const route = useRoute()
   const showDetails = ref(false)
@@ -11,19 +9,16 @@
   const quantity = ref(1)
 
   const cartStore = useCartStore()
-  const {cart, cartForDebug} = storeToRefs(cartStore)
-  const {addVariant: addVariantToCart} = cartStore
+  const {addItem: addItemToCart} = cartStore
 
   const productStore = useProductStore()
-  const {product, options, selectedVariant, validated, lowestPrice} = storeToRefs(productStore)
+  const {product, options, selectedVariant, validated, priceToShow} = storeToRefs(productStore)
   const {changeProductByID , optionIsSelected} = productStore
   
-  const {currencyCode} = storeToRefs(useRegionStore())
-
   const changeOption = (option, variant) => {
     option.selected = option.selected === variant ? undefined : variant
   }
-
+  
   const increment = () => {
     quantity.value ++
   }
@@ -33,20 +28,20 @@
   }
 
   await changeProductByID(route.params.id)
-  
+
   if(product.value?.images.length) imageToShow.value = product.value.images[0].id
 
   const addToBag = () => {
       if(validated){
-        addVariantToCart(selectedVariant.value.id,quantity.value)
+        addItemToCart(selectedVariant.value.id,quantity.value)
     }
   }
+
 
 </script>
 
 <template>
   <div v-if="product" class="container mx-auto p-8">
-    {{currencyCode}}
     <div class="flex flex-col lg:flex-row">
       <div class="lg:w-3/5 lg:pr-14">
         <div class="flex">
@@ -88,7 +83,7 @@
           {{ product.title }}
         </h1>
         <p v-if="product.variants" class="text-lg mt-2 mb-4">
-          {{ formatPrice(product.variants[0].prices[0].amount, currencyCode) }} (?{{ product.variants[0].prices[0].currency_code }})
+          {{priceToShow}}
         </p>
         <p v-else>
           10 USD
@@ -105,9 +100,9 @@
               <button
                 v-for="value in option.values"
                 :key="value.id"
-                :class="{'bg-red-500': optionIsSelected(option, value)}"
-                @click="changeOption(option, value)"
                 class="btn"
+                :class="{'active': optionIsSelected(option, value)}"
+                @click="changeOption(option, value)"
               >
                 {{ value.value }}
               </button>
@@ -148,7 +143,7 @@
       </div>
     </div>
     <hr>
-    <pre :if="cart">Cart debug: {{cartForDebug}}</pre>
+    <!-- <pre :if="cart">Cart debug: {{cartForDebug}}</pre> -->
   </div>
   <div v-else>
     Loading...

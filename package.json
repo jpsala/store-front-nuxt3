@@ -15,8 +15,9 @@
     "postcss-import": "^15.0.0"
   },
   "dependencies": {
-    "@types/node": "18.8.0",
     "@pinia/nuxt": "^0.4.3",
-    "pinia": "^2.0.23"
+    "@types/node": "18.8.0",
+    "pinia": "^2.0.23",
+    "tailwindcss-elevation": "^1.0.1"
   }
 }

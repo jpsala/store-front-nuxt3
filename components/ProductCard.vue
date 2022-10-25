@@ -1,6 +1,26 @@
+<script setup>
+  import { formatPrice } from '~~/helpers/formatPrice';
+import { useProductStore } from '~~/store/product'
+
+  const productStore = useProductStore()
+  const {getLowestPrice} = productStore
+
+  const props = defineProps({
+    product: {
+      type: Object,
+      name: "product"
+    }
+  })
+
+  const lowestPrice = (product) => {
+    const lp = getLowestPrice(product)
+    return lp ? formatPrice(lp.amount, lp.currency_code) : ''
+  }
+</script>
+
 <template>
-  <div>
-    <nuxt-link :to="`/products/${item.id}`">
+  <div v-if="product">
+    <nuxt-link :to="`/products/${product.id}`">
       <div
         class="group relative"
       >
@@ -8,16 +28,16 @@
           <div class="w-auto h-full object-center object-cover bg-gray-100">
             <img
               alt=""
-              :src="item.thumbnail"
+              :src="product.thumbnail"
             >
           </div>
         </div>
         <div class="mt-4 flex justify-between">
           <h3 class="text-sm text-gray-700 font-normal">
-            {{ item.title }}
+            {{ product.title }}
           </h3>
           <p class="text-sm font-semibold text-gray-900">
-            from {{ lowestPrice.amount/100 }} {{ lowestPrice.currency_code.toUpperCase() }}
+            from {{ lowestPrice(product) }}
           </p>
         </div>
       </div>
@@ -25,35 +45,3 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ProductCard',
-  props: {
-    item: {
-      type: Object,
-      default () {
-        return {
-          id: 1,
-          title: 'Kitchen Table',
-          thumbnail: 'https://picsum.photos/600/600',
-          variants: [{ prices: [{ amount: 0 }] }]
-        }
-      }
-    }
-  },
-  computed: {
-    lowestPrice () {
-      const lowestPrice = this.item.variants.reduce((acc, curr) => {
-        return curr.prices.reduce((lowest, current) => {
-          if (lowest.amount > current.amount) {
-            return current
-          }
-          return lowest
-        })
-      }, { amount: 0 })
-
-      return lowestPrice || { amount: 10, currency_code: 'usd' }
-    }
-  }
-}
-</script>

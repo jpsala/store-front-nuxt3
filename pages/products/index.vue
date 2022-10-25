@@ -1,14 +1,15 @@
 <script setup>
-  import { useProductStore } from '~/store/product'
+  import { useProductStore } from '~~/store/product'
   import { storeToRefs } from 'pinia'
   const productStore = useProductStore()
-  const {products, pagination} = storeToRefs(productStore)
-  
+  const {products} = storeToRefs(productStore)
+  const {fetchProducts} = productStore
+  if(!products.value.length) fetchProducts()
+ 
 </script>
 
 <template>
   <div class="container mx-auto p-8">
-    <pre>xx{{pagination}}</pre>
     <div class="w-full border-b border-ui-medium pb-6 mb-2 lg:mb-6 flex items-center justify-between">
       <h1 class="font-semibold text-3xl">
         All Products
@@ -22,7 +23,7 @@
       <ProductCard
         v-for="product in products"
         :key="product.id"
-        :item="product"
+        :product="product"
       />
     </div>
   </div>

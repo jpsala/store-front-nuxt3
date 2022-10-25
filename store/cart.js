@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 
 const API_BASE_URL = 'http://localhost:9000/'
 let cartId = process.client && localStorage.getItem('cart_id');
@@ -54,7 +54,7 @@ export const useCartStore = defineStore('cart-store', () => {
     cart.value = c
   }
 
-  const addVariant = async (variantId, quantity) => {
+  const addItem = async (variantId, quantity) => {
     const resp = await $fetch(`/store/carts/${cartId}/line-items`, {
       baseURL: API_BASE_URL,
       key: (Date.now()).toString(),
@@ -62,6 +62,29 @@ export const useCartStore = defineStore('cart-store', () => {
       body: JSON.stringify({
         variant_id: variantId,
         quantity
+      })
+    })
+    setCart(resp.cart)
+  }
+
+  const removeItem = async (lineItemID) => {
+    console.log('lineItemID', `/store/carts/${cartId}/line-items/${lineItemID}`);
+    const resp = await $fetch(`/store/carts/${cartId}/line-items/${lineItemID}`, {
+      baseURL: API_BASE_URL,
+      key: (Date.now()).toString(),
+      method: 'DELETE',
+    })
+    setCart(resp.cart)
+  }
+
+  const updateItem = async (lineItemID, quantity) => {
+    console.log('lineItemID, quantity', lineItemID, quantity);
+    const resp = await $fetch(`/store/carts/${cartId}/line-items/${lineItemID}`, {
+      baseURL: API_BASE_URL,
+      key: (Date.now()).toString(),
+      method: 'POST',
+      body: JSON.stringify({
+        quantity: Number(quantity)
       })
     })
     setCart(resp.cart)
@@ -92,6 +115,6 @@ export const useCartStore = defineStore('cart-store', () => {
 
   if(process.client) getCart()
 
-  return { cart, setCart, addVariant, cartItemsCount, cartForDebug }
+  return { cart, setCart, addItem, removeItem, cartItemsCount, cartForDebug, updateItem }
 })
 

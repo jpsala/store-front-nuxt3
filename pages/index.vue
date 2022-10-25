@@ -1,9 +1,10 @@
 <script setup>
-  import { storeToRefs } from "pinia";
-import { useProductStore } from "~/store/product";
-
-  const {products} = storeToRefs(useProductStore())
-  const {API_BASE_URL} = useRuntimeConfig() 
+  import { useProductStore } from '~~/store/product'
+  import { storeToRefs } from 'pinia'
+  const productStore = useProductStore()
+  const {products} = storeToRefs(productStore)
+  const {fetchProducts} = productStore
+  if(!products.value.length) fetchProducts()
   
 </script>
 
@@ -59,7 +60,7 @@ import { useProductStore } from "~/store/product";
         <ProductCard
           v-for="product in products"
           :key="product.id"
-          :item="product"
+          :product="product"
         />
       </div>
     </div>

@@ -15,8 +15,17 @@ export default defineConfig({
       '*.test.js',
     ],
   },
+  plugins: [
+    require('tailwindcss-elevation')(
+      ['responsive'],
+      {
+        // color: '77,192,181',
+        // opacityBoost: '0.23'
+      }
+    )
+  ],
   shortcuts:{
-    btn: 'bg-ui-dark text-white inline-flex items-center justify-center rounded-sm text-xs h-12 w-12 mr-2 last:mr-0 '
+    
   },
   /**
    * Write windi classes in html attributes.
