@@ -6,3 +6,4 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
   // context.store.dispatch('initializeRegions', context)
 })
+
