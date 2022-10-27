@@ -57,9 +57,10 @@
         <span class="font-light">Total</span>
         <span class="">{{formatPrice(cart.total, currencyCode)}}</span>
       </div>
-      <button class="btn-ui w-full mt-4">Checkout</button>
+      <nuxt-link to="/checkout">
+        <button class="btn-ui w-full mt-4">Checkout</button>
+      </nuxt-link>
     </div>
-
   </div>
 </template>
 

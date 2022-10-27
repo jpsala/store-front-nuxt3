@@ -37,9 +37,12 @@
           <button @click="remove" class="remove-popover text-gray-500 font-semibold hover:(font-bold text-black)">
             X
           </button>
-          <div class="popover absolute right-[-18px] top-[29px] w-[200px] h-[100px] bg-light-50 p-2 hidden">
-              Remove this item from the cart.
-              <div class="popover-arrow__arrow popover-arrow__arrow--tr"></div>
+          <div class="popover absolute right-[-18px] top-[29px] w-[200px] bg-white hidden border border-r">
+            <div class="w-full border-b mb-3 p-2 bg-white  text-red-600 font-bold">Warning...</div>
+              <div class="popover-body p-2">
+                Remove this item from the cart.
+                <div class="popover-arrow__arrow popover-arrow__arrow--tr"></div>
+              </div>
             </div>
         </div>
 

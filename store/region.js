@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-const API_BASE_URL = 'http://localhost:9000/'
+import {API_BASE_URL} from '~/helpers/baseUrl'
 const REGION = 'medusa_region'
 const COUNTRY = 'medusa_country'
 

@@ -1,8 +1,7 @@
 import { defineStore, storeToRefs } from 'pinia'
 import { useRegionStore } from '~/store/region'
 import { formatPrice } from '~~/helpers/formatPrice'
-
-const API_BASE_URL = 'http://localhost:9000/'
+import {API_BASE_URL} from '~/helpers/baseUrl'
 
 export const useProductStore = defineStore('product-store', () => {
   const { currencyCode } = storeToRefs(useRegionStore())

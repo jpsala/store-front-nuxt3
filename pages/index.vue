@@ -5,7 +5,6 @@
   const {products} = storeToRefs(productStore)
   const {fetchProducts} = productStore
   if(!products.value.length) fetchProducts()
-  
 </script>
 
 <template>

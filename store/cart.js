@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-
-const API_BASE_URL = 'http://localhost:9000/'
+import {API_BASE_URL} from '~/helpers/baseUrl'
 let cartId = process.client && localStorage.getItem('cart_id');
 
 export const useCartStore = defineStore('cart-store', () => {
@@ -8,12 +7,20 @@ export const useCartStore = defineStore('cart-store', () => {
 
   const getCart = async () => {
     if (cartId) {
-      const resp = await $fetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
-      if(resp.cart){
-        setCart(resp.cart)
-      } else {
-        localStorage.removeItem('cart_id')
+      let resp
+      try {
+        resp = await $fetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
+      } catch (error) {
+        console.warn('ERROR...: ', error)
         await createCart()
+      } finally{
+        if(resp.cart){
+          setCart(resp.cart)
+        } else {
+          localStorage.removeItem('cart_id')
+          await createCart()
+        }
+
       }
     } else await createCart()
   }
@@ -36,6 +43,7 @@ export const useCartStore = defineStore('cart-store', () => {
   }
 
   const createCart = async () => {
+    console.log('Creating Cart');
     const resp = await $fetch(`/store/carts`, {
       baseURL: API_BASE_URL,
       method: 'POST',

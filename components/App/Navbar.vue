@@ -1,14 +1,17 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {useCartStore} from '~~/store/cart'
+import {useUserStore} from '~/store/user'
 
 const cartStore = useCartStore()
 const {cartItemsCount} = storeToRefs(cartStore)
+const userStore = useUserStore()
+const { state: userState, loggedIn: userLoggedIn } = storeToRefs(userStore)
 
 </script>
 
 <template>
-  <div class="sticky top-0 z-20">
+  <div class="sticky top-0 z-20" >
     <header class="relative bg-white">
       <nav class="px-4 sm:px-6 lg:px-8 border-b border-ui-medium flex items-center justify-between">
         <div class="flex items-center">
@@ -47,7 +50,8 @@ const {cartItemsCount} = storeToRefs(cartStore)
                   class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-600"
                   type="button"
                 >
-                  Account
+                  <div v-if="userLoggedIn">{{userState.first_name}}</div>
+                  <div v-else>Account</div>
                 </button>
               </div>
             </div>
