@@ -7,15 +7,20 @@ import 'assets/styles/checkout.css'
 const checkoutStore = useCheckoutStore()
 const {sections} = storeToRefs(checkoutStore)
 const {next} = checkoutStore
+let mainEl = undefined
 
 onMounted(() => {
-  document.querySelector('main').classList.add('bg-light-700')
+  mainEl = document.querySelector('main')
+  mainEl.classList.add('bg-light-700')
+})
+onUnmounted(() => {
+  mainEl.classList.remove('bg-light-700')
 })
 </script>
 
 <template>
   <div  class="checkout-wrapper">
-    <div v-if="sections?.contact?.id" class="checkout flex flex-col gap-4 el ">
+    <div class="checkout flex flex-col gap-4 el ">
 
       <checkout-contact :section="sections.contact" @next="next" class="mt-8"/>
       <checkout-address :section="sections.address" @next="next"/>

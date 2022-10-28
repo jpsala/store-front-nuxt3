@@ -5,6 +5,7 @@
       require: true
     },
   })
+
 </script>
 
 <template>

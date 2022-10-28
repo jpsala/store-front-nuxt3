@@ -1,19 +1,24 @@
 import { defineStore, storeToRefs } from 'pinia';
-import {useUserStore} from '~/store/user'
+import {usecustomerStore} from '~/store/customer'
+import {useCartStore} from '~/store/cart'
 import validEmail from '~/helpers/validEmail'
 
 export const useCheckoutStore = defineStore('checkout-store', () => {
 
   const sections = ['contact', 'address', 'delivery', 'payment']
-  const userStore = useUserStore()
-  const { state: userState, loggedIn: userLoggedIn } = storeToRefs(userStore)
+  const customerStore = usecustomerStore()
+  const cartStore = useCartStore()
+  const { state: userState, loggedIn: userLoggedIn, loggingIn: userLoggingIn} = storeToRefs(customerStore)
+  const { loading: cartIsLoading } = storeToRefs(cartStore)
+  const { addGuestCustomerToCart } = cartStore
 
 
   const state = reactive({
     sections: {},
-    sectionActive: 'contact',
+    activeSection: undefined
   })
 
+  // here we set the initial values for the different sections
   sections.forEach( section => {
 
       state.sections[section] = {
@@ -22,12 +27,27 @@ export const useCheckoutStore = defineStore('checkout-store', () => {
         closed: true
       }
 
-      const currentSection = state.sections[section]
+      state.activeSection = state.sections[section]
 
+      // here we set the specific data for each section
       switch (section) {
         case 'contact':
-          currentSection.closed = false
-          currentSection.data = userState?.value
+          state.activeSection.closed = false
+          state.activeSection.data = {}
+          break;
+      case 'address':
+          state.activeSection.data = {
+            company: '',
+            first_name: '',
+            last_name: '',
+            address_1: '',
+            address_2: '',
+            city: '',
+            country_code: '',
+            province: '',
+            postal_code: '',
+            phone: ''
+          }
           break;
       
         default:
@@ -35,26 +55,38 @@ export const useCheckoutStore = defineStore('checkout-store', () => {
       }
   })
 
-  watchEffect(() => {
-    if(userLoggedIn.value) {
-      console.log('unRef(userState)', userState.value);
-      state.sections.contact.data = userState.value
-    }
-  })
+  // this is the first section for the checkout process
+  state.activeSection = state.sections.contact
 
+  // Watching userLoggedIn to set state.sections.contact.data once the user is logged-in 
+  watch(userLoggedIn, () => state.sections.contact.data = userState.value)
+
+  // to manage the close and opening of the diferent sections
   const next = (id) => {
+    // first we set all sections.closed to true
+    
     sections.forEach( s => state.sections[s].closed = true)
-    if(id === 'contact') state.sections.address.closed = false
+    // then we open the new active section
+    if(id === 'contact') state.activeSection = state.sections['address']
+    state.activeSection.closed = false
   }
 
   /*
     Validation
   */
-  // contact validation 
-  watch( ()=>state.sections.contact, (contactSection) => {
-    if(!contactSection) return 
-    contactSection.valid = validEmail(contactSection?.data?.email)
-  }, {deep: true} )
+  // Watching state.sections.contact.data.email for contact validation, here we set contactSection.valid accordingly
+  // Also email is added to the cart if there is no logged-in user
+  watch( ()=>state.sections.contact.data.email, (email) => {
+
+    console.log('Validation watcher email %O, user is logging-in %O', email, userLoggingIn.value);
+    if(userLoggingIn.value) return // Do nothing if logging-in
+
+    const isValid = validEmail(email)
+    console.log('Validating sections.contact.email', email, isValid ? 'valid':'invalid', email);
+    if(isValid && !cartIsLoading.value) addGuestCustomerToCart(email)
+    state.sections.contact.valid = isValid
+
+  } )
   
   return { ...toRefs(state), next}
 })

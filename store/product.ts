@@ -15,10 +15,13 @@ export const useProductStore = defineStore('product-store', () => {
   }
 
   const fetchProducts = async ({limit= 20, offset = 0} = {}) => {
+    
     const fetchOptions = `?limit=${limit}&offset=${offset}`
     
     const data: any = await $fetch(`/store/products${fetchOptions}`, { baseURL: API_BASE_URL })
     products.value.push(...data.products.map(p => ({...p, lowest_price: getLowestPrice(p)})))
+    console.log('(fetchProducts) -> Fetched %O products', products.value.length);
+
   }
 
   const getLowestPrice = (_product => {

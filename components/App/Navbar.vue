@@ -1,12 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {useCartStore} from '~~/store/cart'
-import {useUserStore} from '~/store/user'
+import {usecustomerStore} from '~/store/customer'
 
 const cartStore = useCartStore()
 const {cartItemsCount} = storeToRefs(cartStore)
-const userStore = useUserStore()
-const { state: userState, loggedIn: userLoggedIn } = storeToRefs(userStore)
+const customerStore = usecustomerStore()
+const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
 
 </script>
 

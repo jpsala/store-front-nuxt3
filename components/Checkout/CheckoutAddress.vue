@@ -10,5 +10,6 @@
 
 <template>
   <checkout-section :section="section">
+    <pre>{{section.data}}</pre>
   </checkout-section>
 </template>
