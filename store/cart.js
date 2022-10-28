@@ -1,9 +1,14 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import {API_BASE_URL} from '~/helpers/baseUrl'
-let cartId = process.client && localStorage.getItem('cart_id');
+import {useUserStore} from '~/store/user'
+
 
 export const useCartStore = defineStore('cart-store', () => {
   const cart = ref({items:[]})
+  const { loggedIn: userLoggedIn, state: userState} = storeToRefs(useUserStore())
+  const customerId = ref()
+
+  let cartId = process.client && localStorage.getItem('cart_id');
 
   const getCart = async () => {
     if (cartId) {
@@ -16,13 +21,13 @@ export const useCartStore = defineStore('cart-store', () => {
       } finally{
         if(resp.cart){
           setCart(resp.cart)
+          return resp.cart
         } else {
           localStorage.removeItem('cart_id')
-          await createCart()
+          return undefined
         }
-
       }
-    } else await createCart()
+    } else return new Promise(resolve => resolve())
   }
 
   const cartItemsCount = computed(()=>{
@@ -31,12 +36,24 @@ export const useCartStore = defineStore('cart-store', () => {
     }, 0)
   })
 
-  const addGuestClientToCart = async (email) => {
+  const addGuestCustomerToCart = async (email) => {
     const resp = await $fetch(`/store/carts/${cartId}`, {
       baseURL: API_BASE_URL,
       method: 'POST',
       body: JSON.stringify({
         email
+      })
+    })
+    setCart(resp.cart);
+  }
+
+  const addCustomerToCart = async (customerId) => {
+    console.log('addCustomerToCart customerId %O, cartId %O', customerId, cartId);
+    const resp = await $fetch(`/store/carts/${cartId}`, {
+      baseURL: API_BASE_URL,
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: customerId
       })
     })
     setCart(resp.cart);
@@ -55,7 +72,7 @@ export const useCartStore = defineStore('cart-store', () => {
     cartId = resp.cart.id
     localStorage.setItem('cart_id', resp.cart.id);
     setCart(resp.cart)
-    await addGuestClientToCart('user@example.com')
+    // await addGuestCustomerToCart('user@example.com')
   }
 
   const setCart = (c) => {
@@ -98,6 +115,21 @@ export const useCartStore = defineStore('cart-store', () => {
     setCart(resp.cart)
   }
 
+  // watcher for cart.id to call addCustomerToCart
+  watch(()=>cart.value?.id, (id)=>{
+    if(id){
+      addCustomerToCart(customerId.value)
+    }
+  })
+
+  // watcher userLoggedIn to call addCustomerToCart
+  watch(userLoggedIn, (loggedIn)=>{
+    if(loggedIn) {
+      customerId.value = userState.value.id
+      if(cart.value.id && !cart.value.customerId) addCustomerToCart(customerId.value)
+    }
+  })
+
   const cartForDebug = computed(() => {
     return {
       quantity: cartItemsCount.value,
@@ -121,7 +153,11 @@ export const useCartStore = defineStore('cart-store', () => {
     }
   })
 
-  if(process.client) getCart()
+  // finally we load the cart using the id from localStorage
+  // if there is no cart in localStorage with that id we create a cart
+  getCart().then(_cart=>{
+    if(!_cart) createCart()
+  })
 
   return { cart, setCart, addItem, removeItem, cartItemsCount, cartForDebug, updateItem }
 })

@@ -50,7 +50,7 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(userStore)
                   class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-600"
                   type="button"
                 >
-                  <div v-if="userLoggedIn">{{userState.first_name}}</div>
+                  <div v-if="userLoggedIn">{{userState.first_name}} {{userState.last_name}}</div>
                   <div v-else>Account</div>
                 </button>
               </div>
