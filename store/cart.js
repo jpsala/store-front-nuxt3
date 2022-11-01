@@ -1,19 +1,20 @@
 import { defineStore, storeToRefs } from 'pinia'
 import {API_BASE_URL} from '~/helpers/baseUrl'
-import {usecustomerStore} from '~/store/customer'
+import {useCustomerStore} from '~/store/customer'
 
 
 export const useCartStore = defineStore('cart-store', () => {
   const cart = ref({items:[]})
-  const { loggedIn: userLoggedIn, state: userState} = storeToRefs(usecustomerStore())
+  const { loggedIn: userLoggedIn, state: userState} = storeToRefs(useCustomerStore())
   const loading = ref(true)
+  const cartFetchedCallbacks = []
   let cartId = process.client && localStorage.getItem('cart_id');
 
   const getCart = async () => {
     if (cartId) {
       let resp
       try {
-        resp = await $fetch(`/store/carts/${cartId}`, {baseURL: API_BASE_URL})
+        resp = await $fetch(`/carts/${cartId}`, {baseURL: API_BASE_URL})
       } catch (error) {
         console.warn('Error in getCart ', error)
       } finally{
@@ -34,12 +35,39 @@ export const useCartStore = defineStore('cart-store', () => {
     }, 0)
   })
 
+  const addShippingAddress = async payload => {
+    let returnState = false
+    payload.country_code = 'es'
+    try {
+      const {data, error, pending} = await useFetch(`/carts/${cartId}`, {
+        baseURL: API_BASE_URL,
+        method: 'POST',
+        body: JSON.stringify({"shipping_address":payload})
+      })
+      if(error.value){
+        let errorData = 'Error getting error data'
+        try {
+          errorData = formatForLog(JSON.parse(error.value.data.message))
+        } catch (error) {
+           errorData = error.value
+        }
+        console.warn('addShippingAddress Error: %O', errorData);
+      }else{
+        setCart(data.value.cart);
+        returnState = true
+      }
+    } catch (error) {
+      console.log('error', error);      
+    }
+    return returnState
+  }
+
   const addGuestCustomerToCart = async (email) => {
     if(cart.value.customer_id){
-      console.log('addGuestCustomerToCart: cart already has a customer assigned');
+      console.log('addGuestCustomerToCart: cart has a customer assigned');
       return
     }
-    const resp = await $fetch(`/store/carts/${cartId}`, {
+    const resp = await $fetch(`/carts/${cartId}`, {
       baseURL: API_BASE_URL,
       method: 'POST',
       body: JSON.stringify({
@@ -52,7 +80,7 @@ export const useCartStore = defineStore('cart-store', () => {
 
   const addCustomerToCart = async (customerId) => {
     if(customerId === cart.value.customer_id) return
-    const resp = await $fetch(`/store/carts/${cartId}`, {
+    const resp = await $fetch(`/carts/${cartId}`, {
       baseURL: API_BASE_URL,
       method: 'POST',
       body: JSON.stringify({
@@ -65,7 +93,7 @@ export const useCartStore = defineStore('cart-store', () => {
   const createCart = async () => {
     if(!process.client) return
     console.log('Creating Cart', process.client);
-    const resp = await $fetch(`/store/carts`, {
+    const resp = await $fetch(`/carts`, {
       baseURL: API_BASE_URL,
       method: 'POST',
       body: JSON.stringify({
@@ -79,13 +107,25 @@ export const useCartStore = defineStore('cart-store', () => {
   }
 
   const setCart = (c) => {
-    console.log('Setting the cart content and have %O item/s', c.items?.length);
+    c.shipping_address && delete c.shipping_address.id
+    c.shipping_address && delete c.shipping_address.created_at
+    c.shipping_address && delete c.shipping_address.updated_at 
+    c.shipping_address && delete c.shipping_address.deleted_at 
+    c.shipping_address && delete c.shipping_address.customer_id 
     cart.value = c
     loading.value = false
+    cartFetchedCallbacks.forEach(callback => {
+      callback(c)
+    })
+  }
+
+  const onCartFetched = callback => {
+    if(!cartFetchedCallbacks.find(c => c === callback)) cartFetchedCallbacks.push(callback)
+    console.log('onCartFetched adding callback', cartFetchedCallbacks);
   }
 
   const addItem = async (variantId, quantity) => {
-    const resp = await $fetch(`/store/carts/${cartId}/line-items`, {
+    const resp = await $fetch(`/carts/${cartId}/line-items`, {
       baseURL: API_BASE_URL,
       key: (Date.now()).toString(),
       method: 'POST',
@@ -98,8 +138,8 @@ export const useCartStore = defineStore('cart-store', () => {
   }
 
   const removeItem = async (lineItemID) => {
-    console.log('lineItemID', `/store/carts/${cartId}/line-items/${lineItemID}`);
-    const resp = await $fetch(`/store/carts/${cartId}/line-items/${lineItemID}`, {
+    console.log('lineItemID', `/carts/${cartId}/line-items/${lineItemID}`);
+    const resp = await $fetch(`/carts/${cartId}/line-items/${lineItemID}`, {
       baseURL: API_BASE_URL,
       key: (Date.now()).toString(),
       method: 'DELETE',
@@ -109,7 +149,7 @@ export const useCartStore = defineStore('cart-store', () => {
 
   const updateItem = async (lineItemID, quantity) => {
     console.log('lineItemID, quantity', lineItemID, quantity);
-    const resp = await $fetch(`/store/carts/${cartId}/line-items/${lineItemID}`, {
+    const resp = await $fetch(`/carts/${cartId}/line-items/${lineItemID}`, {
       baseURL: API_BASE_URL,
       key: (Date.now()).toString(),
       method: 'POST',
@@ -150,12 +190,18 @@ export const useCartStore = defineStore('cart-store', () => {
     }
   })
 
-  // finally we load the cart using the id from localStorage
-  // if there is no cart in localStorage with that id we create a cart
+  /*
+    finally we load the cart using the id from localStorage
+    if there is no cart in localStorage we create a cart
+  */
+
   getCart().then(_cart=>{
     if(!_cart) createCart()
   })
 
-  return { cart, setCart, addItem, removeItem, cartItemsCount, cartForDebug, updateItem, addGuestCustomerToCart, loading }
+  return { 
+    cart, setCart, addItem, removeItem, cartItemsCount, cartForDebug, updateItem, addGuestCustomerToCart, 
+    addShippingAddress, onCartFetched, loading 
+  }
 })
 

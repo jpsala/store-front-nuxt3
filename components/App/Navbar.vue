@@ -1,11 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {useCartStore} from '~~/store/cart'
-import {usecustomerStore} from '~/store/customer'
+import {useCustomerStore} from '~/store/customer'
 
 const cartStore = useCartStore()
 const {cartItemsCount} = storeToRefs(cartStore)
-const customerStore = usecustomerStore()
+const customerStore = useCustomerStore()
 const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
 
 </script>
@@ -51,7 +51,9 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
                   type="button"
                 >
                   <div v-if="userLoggedIn">{{userState.first_name}} {{userState.last_name}}</div>
-                  <div v-else>Account</div>
+                  <nuxt-link  v-else to="/customer/Login">
+                    Account
+                  </nuxt-link>
                 </button>
               </div>
             </div>

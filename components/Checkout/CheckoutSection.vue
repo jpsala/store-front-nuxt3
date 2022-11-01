@@ -1,4 +1,7 @@
 <script setup>
+import {useCheckoutStore} from '~~/store/checkout'
+
+const {openSection} = useCheckoutStore()
   const props = defineProps({
     section:{
       type: Object,
@@ -18,13 +21,13 @@
   </div>
   <div v-else class="checkout-section-body p-4 mr-6 flex place-content-between items-center">
     <div class="font-semibold">{{section.title}}</div>
-    <button v-if="section.valid" class="btn-ui" @click="section.closed = false">✓</button>
+    <button v-if="section.valid" class="btn-ui" @click="openSection(section.id)">✓</button>
     <div v-else></div>
   </div>
 </template>
 
 <style>
 .checkout-section-body{
-  @apply rounded-lg mx-8 w-[50%] max-w-[800px] bg-white
+  @apply rounded-lg mx-8 sm:w-full w-[70%]  max-w-[800px] bg-white
 }
 </style>
