@@ -19,7 +19,7 @@ export const useCartStore = defineStore('cart-store', () => {
   let fetchPromise = undefined
   const fetchingShippingOptions = ref(false)
 
-  const getCart = async () => {
+  const getCartOld = async () => {
     if(cart.value?.id) return cart
     if (cartId) {
       overlayShow('getCart', 'Fetching the cart')
@@ -40,6 +40,29 @@ export const useCartStore = defineStore('cart-store', () => {
     } else if(process.client) {
       return (fetchPromise = createCart())
     } else return undefined
+  }
+
+  const getCart = async () => {
+    if(!process.client) return
+    if(cart.value?.id) return cart
+    if (cartId) {
+      overlayShow('getCart', 'Fetching the cart')
+      cartIsFetching.value = true
+      return useFetch(`/carts/${cartId}`, {baseURL: API_BASE_URL}).then(resp => {
+        return new Promise(success => {
+          watch(resp.data, async (data) => {
+            cartIsFetching.value = false
+            overlayHide('getCart', 'Fetching the cart')
+            if(data?.cart?.id){
+              setCart(data.cart)
+              success(cart)
+            } else{
+              success(await createCart());
+            }
+          })
+        })
+      })
+    } else return createCart()
   }
 
   const cartItemsCount = computed(()=>{

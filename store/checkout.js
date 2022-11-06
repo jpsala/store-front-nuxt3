@@ -4,7 +4,7 @@ import {useCartStore} from '~/store/cart'
 import validEmail from '~/helpers/validEmail'
 import { useRegionStore } from './region';
 import {usePaymentStore} from '~/store/payment'
-import formatForLog from '~~/helpers/formatForLog';
+
 export const useCheckoutStore = defineStore('checkout-store', () => {
   const {push: gotoRoute} = useRouter()
 
@@ -20,14 +20,15 @@ export const useCheckoutStore = defineStore('checkout-store', () => {
   const paymentStore = usePaymentStore()
   const {executePayment} = paymentStore
   const {ready} = storeToRefs(paymentStore)
+
   // store state
   const state = reactive({
     sections: {},
     activeSection: undefined
   })
 
-    // here we set the initial values for the different sections
-    sections.forEach( section => {
+  // here we set the initial values for the different sections
+  sections.forEach( section => {
 
       state.sections[section] = {
         id: section,
@@ -89,7 +90,6 @@ export const useCheckoutStore = defineStore('checkout-store', () => {
         break;
       }
   })
-    
 
   /* 
     openSection()

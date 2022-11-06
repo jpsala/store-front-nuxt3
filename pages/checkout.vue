@@ -15,12 +15,14 @@ const {getCart} = cartStore
 const {push: gotoRoute} = useRouter()
 
 changeMainPageColor()
+
 onBeforeMount( async () =>  {
   console.log('beforeMount', );
   const cart = await getCart()
   if(!cart?.value?.items?.length) gotoRoute('/')
   initCheckout()
 })
+
 </script>
 
 <template>
