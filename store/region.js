@@ -19,15 +19,9 @@ export const useRegionStore = defineStore('region-store', ()=>{
     localStorage.setItem(COUNTRY, JSON.stringify(country.value))
   }
 
-  const setRegions = (_regions) => {
-    
-    regions.value = _regions
-  }
-
   const initializeRegions = async () => {
-    const {data} = await useFetch('store/regions', {baseURL: API_BASE_URL} )
-
-    setRegions(data.value.regions)
+    const {data} = await useFetch('regions', {baseURL: API_BASE_URL} )
+    regions.value = data.value.regions
     
     if (process.client && localStorage) {
       const regionJSON = localStorage.getItem(REGION)
@@ -45,6 +39,6 @@ export const useRegionStore = defineStore('region-store', ()=>{
   
   initializeRegions()
 
-  return {setRegions, initializeRegions, country, region, regions, updateRegion, currencyCode }
+  return {initializeRegions, country, region, regions, updateRegion, currencyCode }
 })
 

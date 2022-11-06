@@ -3,13 +3,26 @@ import { defineStore } from "pinia";
 import {API_BASE_URL} from '~/helpers/baseUrl'
 
 export const useCustomerStore = defineStore('customer-store', ()=>{
-  
   let state = reactive({})
   let loggedIn = ref(false)
   let loggingIn = ref(true)
+  
+  const {overlayShow, overlayHide} = useOverlay()
 
-  const login = async ({email = 'jpsala@gmail.com', password = 'Jrf4519405'}) => {
+  // show the overlay while logging in
+
+  watch(loggingIn, (isLoggingIn) => isLoggingIn ? overlayShow('isLoggingIn', 'User is logging-in') : overlayHide('isLoggingIn'), {immediate:true})
+
+  const emailExists = async (email) => {
+    const resp = await $fetch(`auth${email}`, {
+      baseURL: API_BASE_URL,
+    })
+    console.log('resp', resp);
+  }
+
+  const login = async ({email = '', password = ''}) => {
     try {
+      loggingIn.value = true
       const resp = await $fetch(`/auth`, {
         baseURL: API_BASE_URL,
         credentials: 'include',
@@ -21,6 +34,8 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
     } catch (error) {
       console.warn('Couldn\'t Login');
       return error
+    } finally {
+      loggingIn.value = false
     }
   }
 
@@ -38,6 +53,7 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
     console.log('resetPasswrod', data.value, error.value);
     return error.value
   }
+
   const resetPassword = async ({email, password, token}) => {
     console.log('Resetting password for ', email);
     const {data, error} = await useFetch('/customers/password-reset', {
@@ -49,13 +65,13 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
         'Content-Type': 'application/json'
       }
     })
-    console.log('resetPasswrod', data.value, error.value);
     return error.value
   }
 
   const loginSavedUser = async () => {
     if(!process.client) return
     try {
+      loggingIn.value = true
       const resp = await $fetch(`/customers/me`, {
         credentials: 'include',
         method: "GET",
@@ -67,6 +83,8 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
     } catch (error) {
       console.warn('There is no saved customer :', error);
       setCustomerState({})
+    } finally {
+      loggingIn.value = false
     }
   }
 
@@ -103,16 +121,16 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
   */
   
   loginSavedUser()
-
+  loggingIn.value = false
   // just for testing!!!
   // addUser({
-  //   first_name: "Juan",
-  //   last_name: "Sala",
-  //   email: "jpsala@gmail.com",
+  //   first_name: "Usuario",
+  //   last_name: "Uno",
+  //   email: "jpsala+uno@gmail.com",
   //   phone: "02236686454",
   //   password: "Jrf4519405"
   // })
-  // ddUser({
+  // adUser({
   //   first_name: "Angel",
   //   last_name: "Morales",
   //   email: "angelmoraleszero@gmail.com",
@@ -122,8 +140,8 @@ export const useCustomerStore = defineStore('customer-store', ()=>{
   /*
    login and set the customer state, just for testing!!!
   */
-  // login({email:'jpsala@gmail.com', password:'Jrf4519405'})
+  // if(API_BASE_URL.includes('localhost')) login({email:'jpsala@gmail.com', password:'Jrf4519405'})
   // resetPassword('jpsala@gmail.com')
 
-  return {state, login, loggedIn, loggingIn, resetPasswordRequest, resetPassword}
+  return {state, login, loggedIn, loggingIn, resetPasswordRequest, resetPassword, addUser}
 })

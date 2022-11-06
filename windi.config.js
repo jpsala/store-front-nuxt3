@@ -24,6 +24,7 @@ export default defineConfig({
       }
     )
   ],
+  safelist: 'bg-light-700',
   shortcuts:{
     
   },

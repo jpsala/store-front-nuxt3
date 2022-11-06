@@ -4,10 +4,15 @@ import {useCartStore} from '~~/store/cart'
 import {useCustomerStore} from '~/store/customer'
 
 const cartStore = useCartStore()
-const {cartItemsCount} = storeToRefs(cartStore)
+const {cartItemsCount, cartIsFetching} = storeToRefs(cartStore)
 const customerStore = useCustomerStore()
-const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
-
+const { state: userState, loggedIn: userLoggedIn, loggingIn: userLoggingIn } = storeToRefs(customerStore)
+const reload = () => {
+  if(process.client){
+    localStorage.removeItem('cart_id')
+    location.reload()
+  } 
+}
 </script>
 
 <template>
@@ -24,6 +29,7 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
               >
                 Home
               </nuxt-link>
+              <span class="cursor-pointer border py-2 px-3 mx-3 bg-red-300 rounded-md" @click="reload()">Remove cart & reload</span>
               <nuxt-link
                 to="/products"
                 class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
@@ -34,7 +40,6 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
                 to="/cart"
                 class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
               >
-                Cart
               </nuxt-link>
             </div>
           </div>
@@ -52,6 +57,7 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
                 >
                   <div v-if="userLoggedIn">{{userState.first_name}} {{userState.last_name}}</div>
                   <nuxt-link  v-else to="/customer/Login">
+                    <spinner v-if="userLoggingIn" class="top-[3px] left-[28px] border-blue-600" size="sm"/>
                     Account
                   </nuxt-link>
                 </button>
@@ -61,8 +67,10 @@ const { state: userState, loggedIn: userLoggedIn } = storeToRefs(customerStore)
             <div>
               <nuxt-link
                 to="/cart"
-                class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0"
+                class="block mt-4 mr-4 lg:inline-block lg:mt-0 text-gray-700 hover:text-gray-600 last:mr-0 relative"
               >
+                <spinner v-show="cartIsFetching" class="top-[14px] left-[4px]" size="sm"/>
+
               <button
                 class="inline-flex items-center justify-center w-full py-2 bg-white text-sm font-medium hover:opacity-1/2"
                 type="button"

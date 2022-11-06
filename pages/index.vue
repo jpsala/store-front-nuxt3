@@ -11,23 +11,13 @@
   <div>
     <div class="bg-ui-light pb-12 lg:pb-0 w-full px-4 sm:px-6 lg:px-12">
       <div class="flex flex-col lg:flex-row items-center max-w-screen-2xl mx-auto">
-        <div class="w-auto h-full object-center object-cover p-12">
-          <img
-            width="600"
-            alt=""
-            src="https://start.medusajs.com/static/9803c162c71fd1960d9d11253859c701/246b5/hero-merch.webp"
-          >
-        </div>
         <div>
           <h1 class="text-4xl">
-            CLAIM YOUR MERCH
+            
           </h1>
           <p class="mt-2 text-lg font-normal">
-            Contribute to Medusa and receive free merch<br>as a token of our appreciation
+            
           </p>
-          <button class="btn-ui mt-4 min-w-full lg:min-w-0">
-            Learn more
-          </button>
         </div>
       </div>
     </div>

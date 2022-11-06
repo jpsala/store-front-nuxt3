@@ -14,7 +14,7 @@
   const productStore = useProductStore()
   const {product, options, selectedVariant, validated, priceToShow} = storeToRefs(productStore)
   const {changeProductByID , optionIsSelected} = productStore
-  
+  const {overlayShow, overlayHide} = useOverlay()  
   const changeOption = (option, variant) => {
     option.selected = option.selected === variant ? undefined : variant
   }
@@ -26,8 +26,9 @@
   const decrement = () => {
     if (quantity.value > 1) quantity.value --
   }
-
+  overlayShow('changeProductByID')
   await changeProductByID(route.params.id)
+  overlayHide('changeProductByID')
 
   if(product.value?.images.length) imageToShow.value = product.value.images[0].id
 
@@ -143,7 +144,6 @@
       </div>
     </div>
     <hr>
-    <!-- <pre :if="cart">Cart debug: {{cartForDebug}}</pre> -->
   </div>
   <div v-else>
     Loading...

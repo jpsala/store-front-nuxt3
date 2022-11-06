@@ -16,8 +16,12 @@
   },
   "dependencies": {
     "@pinia/nuxt": "^0.4.3",
+    "@stripe/stripe-js": "^1.42.1",
     "@types/node": "18.8.0",
+    "add": "^2.0.6",
+    "deep-object-diff": "^1.1.7",
     "pinia": "^2.0.23",
-    "tailwindcss-elevation": "^1.0.1"
+    "tailwindcss-elevation": "^1.0.1",
+    "yarn": "^1.22.19"
   }
 }

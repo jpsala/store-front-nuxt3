@@ -5,23 +5,24 @@ import {API_BASE_URL} from '~/helpers/baseUrl'
 
 export const useProductStore = defineStore('product-store', () => {
   const { currencyCode } = storeToRefs(useRegionStore())
+  const {overlayShow, overlayHide} = useOverlay()
+
   const product = ref()
   const products = ref([])
 
   const changeProductByID = async (id) => {
     const {data}: any = await useFetch(`products/${id}`, { baseURL: API_BASE_URL, key: id })
-    // console.log('data.value', JSON.stringify(data.value, null, 2));
     product.value = data.value.product
   }
 
   const fetchProducts = async ({limit= 20, offset = 0} = {}) => {
-    
+    overlayShow('fetchProducts')
     const fetchOptions = `?limit=${limit}&offset=${offset}`
     
     const data: any = await $fetch(`/products${fetchOptions}`, { baseURL: API_BASE_URL })
     products.value.push(...data.products.map(p => ({...p, lowest_price: getLowestPrice(p)})))
     console.log('(fetchProducts) -> Fetched %O products', products.value.length);
-
+    overlayHide('fetchProducts')
   }
 
   const getLowestPrice = (_product => {
@@ -83,7 +84,6 @@ export const useProductStore = defineStore('product-store', () => {
 
   const selectedVariantPriceToShow = computed(()=>{
     if(selectedVariant.value){
-      console.log('detalle', selectedVariant.value);
       return formatPrice(selectedVariant.value.prices.find(p => p.currency_code === currencyCode.value).amount, currencyCode.value)
     }
   })

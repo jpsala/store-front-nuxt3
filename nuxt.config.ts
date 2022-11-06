@@ -2,10 +2,11 @@ export default defineNuxtConfig({
   preflight: false,
   modules: [
     'nuxt-windicss',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
   ],
   publicRuntimeConfig: {
   },
+ 
   app: {
     pageTransition: false,
     layoutTransition: false

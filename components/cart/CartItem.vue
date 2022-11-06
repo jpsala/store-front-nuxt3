@@ -32,7 +32,7 @@
     <div class="w-full flex flex-col justify-between ">
 
       <div class="relative">
-        <spinner class="remove-item-spinner" />
+        <spinner class="remove-item-spinner hidden" />
         <div class="remove-item-wrapper absolute top-2 right-0 mb-4">
           <button @click="remove" class="remove-popover text-gray-500 font-semibold hover:(font-bold text-black)">
             X
@@ -65,7 +65,7 @@
             @increment="(quantity)=>changeQuantity(quantity)" 
             @decrement="(quantity)=>changeQuantity(quantity)"
           >
-          <spinner class="spinner-quantity border-green-600 top-2 left-7 hidden" />
+          <spinner class="spinner-quantity top-2 left-7 hidden" />
         </quantity-selector>
       </div>
     </div>

@@ -1,17 +1,23 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import { useCustomerStore} from '~/store/customer'
+const customerStore = useCustomerStore()
+const {login, resetPasswordRequest: resetUserPassword} = customerStore
+const {loggedIn, loggingIn} = storeToRefs(customerStore)
+const state = reactive({email:'', password: ''})
+const {push: gotoRoute} = useRouter()
+const submit = async () => await login({email: state.email, password: state.password})
 
-const {login, resetPasswordRequest: resetUserPassword} = useCustomerStore()
-const state = reactive({email:'jpsala@gmail.com', password: 'Jrf4519405'})
-const submit = async () => {
-  const resp = await login({email: state.email, password: state.password})
-  console.log('resp', resp);
-}
+// get out of here when/after logged-in
+watch(loggedIn, (loggedIn)=>{
+  if(loggedIn) gotoRoute('/')
+}, {immediate: true})
 
 const resetPassord = async () => {
   const resp = await resetUserPassword(state.email)
   console.log('resp', resp);
 }
+
 </script>
 <template>
 <section class="bg-gray-50 dark:bg-gray-900">

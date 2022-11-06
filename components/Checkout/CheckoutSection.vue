@@ -12,18 +12,20 @@ const {openSection} = useCheckoutStore()
 </script>
 
 <template>
-  <div v-if="!section.closed" class="checkout-section-body">
+  <div>
+  <div v-show="!section.closed" class="checkout-section-body">
     <section-title :title="section.title" />
     <div class="section-body px-5 py-4">
       <slot />
       <button :disabled="!section.valid" @click="$emit('next', section.id)" class="btn-ui ml-auto mt-6 block">Next</button>
     </div>
   </div>
-  <div v-else class="checkout-section-body p-4 mr-6 flex place-content-between items-center">
+  <div v-show="section.closed" class="checkout-section-body p-4 mr-6 flex place-content-between items-center">
     <div class="font-semibold">{{section.title}}</div>
     <button v-if="section.valid" class="btn-ui" @click="openSection(section.id)">✓</button>
     <div v-else></div>
   </div>
+</div>
 </template>
 
 <style>

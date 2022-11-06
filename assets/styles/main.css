@@ -8,4 +8,13 @@
   @apply bg-gray-600;
 }
 
-
+input{
+  border: 1px solid rgb(236 236 236);
+  padding: 7px 9px !important;
+}
+input:hover, input:active, input:focus-visible{
+  border: 1px solid rgb(211, 211, 211)!important;
+}
+input:focus-visible{
+  outline: rgb(157, 173, 155) solid 1.1px !important ;
+}
